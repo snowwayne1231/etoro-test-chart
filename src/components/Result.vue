@@ -5,7 +5,7 @@
             <tbody>
                 <tr>
                     <th>獲利率:</th>
-                    <td :class="balanceClassName">{{result.ration_balance}}</td>
+                    <td :class="balanceClassName">{{result.balance}}</td>
                 </tr>
                 <tr></tr>
             </tbody>
@@ -33,6 +33,7 @@ export default {
                 this.setting,
             );
             console.log(result);
+            this.$store.commit('UPDATE_RESULT', result);
         },
     },
 }

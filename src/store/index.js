@@ -19,9 +19,8 @@ export default new Vuex.Store({
             max_num_postion: 10,
         },
         result: {
-            ration_balance: 0.00,
-            position_open_tracks: [],
-            position_close_tracks: [],
+            balance: 0.00,
+            positions: [],
         },
         stock: {
             date_start: new Date(),
@@ -38,6 +37,9 @@ export default new Vuex.Store({
         },
         UPDATE_STOCK(state, payload) {
             state.stock = payload;
+        },
+        UPDATE_RESULT(state, payload) {
+            state.result = payload;
         },
     },
     actions: {

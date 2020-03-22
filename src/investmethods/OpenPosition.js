@@ -9,7 +9,9 @@ export function BilateralBuy(pointTrends, settings) {
     const ratio_collect = settings.ratio_close_position_revenue || 5;
     const collect = ratio_collect / 100;
     const max_position = settings.max_num_postion || 0;
-    const ratio_half_spread = ratio_spread / 2;
+    const ratio_half_spread = ratio_spread / 2 / 100;
+    const margin_spread = pointTrends[0].point * ratio_half_spread;
+    console.log('margin_spread', margin_spread)
 
     const result = {
         positions: [],
@@ -19,22 +21,31 @@ export function BilateralBuy(pointTrends, settings) {
     const exist_long_positions = [];
     const exist_short_positions = [];
     const _st = new Date().getTime();
-    const closePostion = (idx, point) => {
-        const p = result.positions[idx];
+    const closePostion = (input, point) => {
+        const p = typeof(input) == 'object' ? input : result.positions[input];
         p.close = point;
-        p.net = (p.close - p.open) / p.open * lever;
+        const margin = (p.close - p.open) / p.open * lever;
+        if (p.type == 1) {
+            p.net = margin;
+        } else {
+            p.net = -(margin);
+        }
     }
 
+    let point = 0;
+
     pointTrends.map((p, idx) => {
-        const point = p.point;
+        point = p.point;
 
         for (let i = 0; i < exist_long_positions.length; i++) {
             let long = exist_long_positions[i];
+            // console.log('long: ', long);
             let position = result.positions[long];
             let open = position.open;
-            let gap_r = (open - point) * lever / open;
-            if ((gap_r >= collect) || (gap_r <= stop_loss)) {
+            let gap_r = (point - open) * lever / open;
+            if ((gap_r >= collect) || (gap_r <= -(stop_loss))) {
                 closePostion(long, point);
+                // console.log('closePostion: ', idx, point);
                 exist_long_positions.splice(i, 1);
                 i--;
             }
@@ -44,8 +55,8 @@ export function BilateralBuy(pointTrends, settings) {
             let short = exist_short_positions[i];
             let position = result.positions[short];
             let open = position.open;
-            let gap_r = (open - point) * lever / open;
-            if ((gap_r >= stop_loss) || (gap_r <= collect)) {
+            let gap_r = (point - open) * lever / open;
+            if ((gap_r >= stop_loss) || (gap_r <= -(collect))) {
                 closePostion(short, point);
                 exist_short_positions.splice(i, 1);
                 i--;
@@ -54,15 +65,16 @@ export function BilateralBuy(pointTrends, settings) {
 
         if (exist_long_positions.length < max_position) {
             let lastLong = exist_long_positions[exist_long_positions.length-1];
-            let gap_r = 0;
+            let gap_r = -100;
+            
             if (lastLong) {
                 let lastOpen = result.positions[lastLong].open;
-                let gap_r = (point - lastOpen) / lastOpen;
+                gap_r = (point - lastOpen) / lastOpen;
             }
             
             if (gap_r < -(should_add)) {
-                let postion = openPosition(1, point, idx);
-                exist_long_positions.push(idx);
+                let postion = openPosition(1, point + margin_spread, result.positions.length);
+                exist_long_positions.push(result.positions.length);
                 result.positions.push(postion);
             }
             
@@ -70,15 +82,15 @@ export function BilateralBuy(pointTrends, settings) {
 
         if (exist_short_positions.length < max_position) {
             let lastShort = exist_short_positions[exist_short_positions.length-1];
-            let gap_r = 0;
+            let gap_r = 100;
             if (lastShort) {
                 let lastOpen = result.positions[lastShort].open;
                 gap_r = (point - lastOpen) / lastOpen;
             }
 
             if (gap_r > should_add) {
-                let postion = openPosition(2, point, idx);
-                exist_short_positions.push(idx);
+                let postion = openPosition(2, point - margin_spread, result.positions.length);
+                exist_short_positions.push(result.positions.length);
                 result.positions.push(postion);
             }
         }
@@ -86,6 +98,13 @@ export function BilateralBuy(pointTrends, settings) {
     });
     // console.log(pointTrends);
     // console.log(settings);
+    result.positions.map(pos => {
+        if (pos.net == 0) {
+            closePostion(pos, point);
+        }
+
+        result.balance += pos.net;
+    });
     const _ed = new Date().getTime();
     console.log(`Spend Time: ${_ed - _st}`);
     return result;
@@ -96,7 +115,7 @@ export default function openPosition(type, now_point, idx = 0) {
         type: type==1 ? 1 : 2,   // 1 = long , 2 = short
         open: now_point,
         close: 0.00,
-        net: 0.00,
+        net: 0,
         idx,
     }
     return pos_format;

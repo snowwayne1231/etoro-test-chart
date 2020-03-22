@@ -101,7 +101,7 @@ export default {
         refreshLocalData() {
             this.local_ratio_spread = this.setting.ratio_spread;
             this.local_ratio_close_position_revenue = this.setting.ratio_close_position_revenue;
-            this.local_ratio_close_position_loss = this.setting.ratio_colose_position_loss;
+            this.local_ratio_close_position_loss = this.setting.ratio_close_position_loss;
             this.local_lever = this.setting.lever;
             this.local_max_num_postion = this.setting.max_num_postion;
             this.local_ration_add_position = this.setting.ration_add_position;
@@ -110,7 +110,7 @@ export default {
             this.$store.commit('UPDATE_SETTING', {
                 ratio_spread: this.local_ratio_spread,
                 ratio_close_position_revenue: this.local_ratio_close_position_revenue,
-                ratio_colose_position_loss: this.local_ratio_close_position_loss,
+                ratio_close_position_loss: this.local_ratio_close_position_loss,
                 lever: this.local_lever,
                 max_num_postion: this.local_max_num_postion,
                 ration_add_position: this.local_ration_add_position,
