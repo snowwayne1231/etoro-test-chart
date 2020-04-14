@@ -2,10 +2,18 @@
     <div class="setting">
         <ul>
             <li>
+                <label>資料</label>
+            </li>
+            <li>
+                <input tpye='text' v-model="local_json_file_name" @blur="onChangeFileName">
+            </li>
+        </ul>
+        <ul>
+            <li>
                 <label>投入方式</label>
             </li>
             <li>
-                <select>
+                <select @change="onClickConfirm">
                     <option v-for="(v, i) in option.type" :key="i" :value="i">{{v}}</option>
                 </select>
             </li>
@@ -15,7 +23,7 @@
                 <label>點差 (%)</label>
             </li>
             <li>
-                <input tpye='number' v-model="local_ratio_spread">
+                <input tpye='number' v-model="local_ratio_spread" @blur="onClickConfirm">
             </li>
         </ul>
         <ul>
@@ -23,7 +31,7 @@
                 <label>最小補倉率(%)</label>
             </li>
             <li>
-                <input tpye='number' v-model="local_ration_add_position">
+                <input tpye='number' v-model="local_ratio_add_position" @blur="onClickConfirm">
             </li>
         </ul>
         <ul>
@@ -31,7 +39,7 @@
                 <label>槓桿</label>
             </li>
             <li>
-                <input tpye='number' v-model="local_lever">
+                <input tpye='number' v-model="local_lever" @blur="onClickConfirm">
             </li>
         </ul>
         <ul>
@@ -39,7 +47,7 @@
                 <label>收倉盈收 (%)</label>
             </li>
             <li>
-                <input tpye='number' v-model="local_ratio_close_position_revenue">
+                <input tpye='number' v-model="local_ratio_close_position_revenue" @blur="onClickConfirm">
             </li>
         </ul>
         <ul>
@@ -47,7 +55,7 @@
                 <label>止損 (%)</label>
             </li>
             <li>
-                <input tpye='number' v-model="local_ratio_close_position_loss">
+                <input tpye='number' v-model="local_ratio_close_position_loss" @blur="onClickConfirm">
             </li>
         </ul>
         <ul>
@@ -55,7 +63,7 @@
                 <label>最大同倉數</label>
             </li>
             <li>
-                <input tpye='number' v-model="local_max_num_postion">
+                <input tpye='number' v-model="local_max_num_postion" @blur="onClickConfirm">
             </li>
         </ul>
         <ul>
@@ -63,7 +71,7 @@
                 
             </li>
             <li>
-                <button @click="onClickConfirm">確認</button>
+                <!-- <button @click="onClickConfirm">確認</button> -->
             </li>
         </ul>
 
@@ -78,20 +86,24 @@ import { mapState } from 'vuex';
 export default {
     name: 'Setting',
     data() {
+        let d = new Date();
+        let today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() +1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
         return {
             local_ratio_spread: 0.00,
-            local_ration_add_position: 0,
+            local_ratio_add_position: 0,
             local_lever: 0,
             local_ratio_close_position_revenue: 0.00,
             local_ratio_close_position_loss: 0.00,
             local_max_num_postion: 0,
+            local_json_file_name: '27-' + today,
         };
     },
     computed: {
         ...mapState(['option', 'setting']),
     },
     mounted() {
-        this.$store.dispatch('getStockByURL', '/data/dj-29-2020-03-20.json').then(this.init);
+        
+        this.onChangeFileName().then(this.init);
         
     },
     methods: {
@@ -104,7 +116,7 @@ export default {
             this.local_ratio_close_position_loss = this.setting.ratio_close_position_loss;
             this.local_lever = this.setting.lever;
             this.local_max_num_postion = this.setting.max_num_postion;
-            this.local_ration_add_position = this.setting.ration_add_position;
+            this.local_ratio_add_position = this.setting.ratio_add_position;
         },
         onClickConfirm() {
             this.$store.commit('UPDATE_SETTING', {
@@ -113,8 +125,13 @@ export default {
                 ratio_close_position_loss: this.local_ratio_close_position_loss,
                 lever: this.local_lever,
                 max_num_postion: this.local_max_num_postion,
-                ration_add_position: this.local_ration_add_position,
+                ratio_add_position: this.local_ratio_add_position,
             });
+        },
+        onChangeFileName() {
+            let file = this.local_json_file_name.replace(/\.json$/i, '');
+            let url = `/data/${file}.json`;
+            return this.$store.dispatch('getStockByURL', url);
         },
     },
 }
@@ -142,7 +159,7 @@ export default {
 
         input {
             width: auto;
-            max-width: 88px;
+            max-width: 128px;
             padding: 2px;
             margin: 0px;
         }

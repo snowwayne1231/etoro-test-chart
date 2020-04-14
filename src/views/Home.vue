@@ -5,7 +5,7 @@
             <Result></Result>
         </div>
         <div class="home-chart">
-
+            <Chart></Chart>
         </div>
     </div>
 </template>
@@ -14,6 +14,7 @@
 // @ is an alias to /src
 import Setting from '@/components/Setting.vue';
 import Result from '@/components/Result.vue';
+import Chart from '@/components/Chart.vue';
 
 
 
@@ -23,6 +24,7 @@ export default {
     components: {
         Setting,
         Result,
+        Chart,
     }
 }
 </script>

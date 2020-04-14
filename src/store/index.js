@@ -17,6 +17,7 @@ export default new Vuex.Store({
             ratio_close_position_revenue: 3,
             ratio_close_position_loss: 50,
             max_num_postion: 10,
+            ratio_add_position: 0.1,
         },
         result: {
             balance: 0.00,
@@ -47,24 +48,28 @@ export default new Vuex.Store({
             return Axios.get(url).then((res) => {
                 try {
                     const data = res.data;
-                    const pointTrends = data.Candles[0].Candles.map(e => {
+                    const pointTrends = data.map(e => {
                         return {
-                            point: e.Open,
-                            date: e.FromDate,
+                            point: e.open,
+                            date: e.datetime,
                         }
-                    }).reverse();
+                    }).sort((a, b) => {
+                        return new Date(a.date).getTime() - new Date(b.date).getTime();
+                    });
 
                     commit('UPDATE_STOCK', {
                         date_start: new Date(pointTrends[0].date),
                         date_end: new Date(pointTrends[pointTrends.length-1].date),
                         pointTrends,
                     })
-                    // console.log(pointTrends);
+                    console.log('getStockByURL :', pointTrends);
                 } catch (err) {
                     console.log(res);
                     console.log(err);
                 }
                 return res;
+            }).catch(err => {
+                console.log(err);
             });
         },
     },
